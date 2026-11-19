@@ -19,6 +19,17 @@ The service listens on <http://localhost:8080>. At the very first start it creat
 and loads `members.json` and `tasks.json` (6 members, 45 tasks). Later starts keep the data.
 Delete the `data/` folder to start again from the seed.
 
+## Run with Docker
+
+```bash
+docker build -t nordia-tasks .
+docker run --rm -p 8080:8080 -v nordia-data:/app/data nordia-tasks
+```
+
+Two-stage build (Maven, then a JRE-only image) running as a non-root user. The H2 file lives in the
+`nordia-data` volume, so the data survives container restarts (`docker volume rm nordia-data` to start over).
+Tests are not run while the image is built: use `./mvnw test`. Built and run on Ubuntu with Docker 28.1.1.
+
 ## Test it
 
 ```bash
@@ -145,12 +156,13 @@ src/main/java/com/nordia/tasks/
   util/        Json, Timestamps
 src/main/resources/  application.properties, schema.sql, seed/members.json, seed/tasks.json
 src/test/java/...    tests listed above
+Dockerfile, .dockerignore   two-stage image (see "Run with Docker")
 ```
 
 ## Limits and what I cut
 
 * A single service instance and a single writer at a time.
-* Not done: purging old idempotency keys, Dockerfile and CI workflow, `/health`, OpenAPI, structured logs.
+* Not done: purging old idempotency keys, a CI workflow, `/health` (so no container health check), OpenAPI, structured logs.
 * Not tested: a real HTTP server, a crash in the middle of a transaction, load, several instances, lock
   timeouts under heavy load.
 * Known limitation: the seed is loaded right after the web server starts, so a request arriving in the first
@@ -158,8 +170,9 @@ src/test/java/...    tests listed above
 * Differences from the mock: no random failures, latency or `/_test` routes; unexpected errors answer
   `500 internal_error`; a cursor with more than 18 digits is refused as `invalid_cursor`.
 * Members are read on each write to validate `assigneeId` (fine for six members).
+* The H2 file uses the default `sa` user with an empty password: it is a local file, not a network database, and the H2 console is disabled.
 
 ## AI usage
 
-Claude (Anthropic) was used throughout this work: analysis of the brief, architecture, first version of the
+Claude (Anthropic) was used throughout this work: architecture, first version of the
 code, tests and this README. I ran, tested and committed everything myself. Details are in the submission form.
