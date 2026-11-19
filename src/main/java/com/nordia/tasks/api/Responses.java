@@ -14,6 +14,10 @@ final class Responses {
     private Responses() {}
 
     static ResponseEntity<String> of(Result result) {
-        return ResponseEntity.status(result.status()).contentType(JSON).body(result.body());
+        ResponseEntity.BodyBuilder builder = ResponseEntity.status(result.status()).contentType(JSON);
+        if (result.replay()) {
+            builder.header("Idempotent-Replay", "true");
+        }
+        return builder.body(result.body());
     }
 }
