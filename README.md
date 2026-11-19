@@ -175,4 +175,4 @@ Dockerfile, .dockerignore   two-stage image (see "Run with Docker")
 ## AI usage
 
 Claude (Anthropic) was used throughout this work: architecture, first version of the
-code, tests and this README. I ran, tested and committed everything myself. Details are in the submission form.
+code, tests and this README. I ran, tested and committed everything myself.
